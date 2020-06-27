@@ -186,7 +186,7 @@ class SoftMarkedBertModel(object):
                 self.prob = tf.keras.layers.Dense(1, activation='sigmoid')(gru)
 
                 # Add embedding for <MASK>
-                mask_tensor = tf.constant(mask_value, shape=[batch_size, seq_length])
+                mask_tensor = tf.constant(mask_value, shape=[1, 1])
                 (mask_embedding_output, _) = embedding_lookup(
                     input_ids=mask_tensor,
                     vocab_size=config.vocab_size,
