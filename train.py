@@ -59,7 +59,9 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
         with tf.variable_scope("sigmoid/detect"):
             prob_logits = tf.squeeze(model.prob, axis=-1)
             prob_loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=soft_mask_label, logits=prob_logits)
-            prob_loss = tf.reduce_mean(prob_loss)
+            numerator = tf.reduce_sum(masked_lm_weights * prob_loss)
+            denominator = tf.reduce_sum(masked_lm_weights) + 1e-5
+            prob_loss = numerator / denominator
 
         # merge masked_lm_loss of bert and prob_loss from gru
         total_loss = masked_lm_loss * loss_lambda + (1 - loss_lambda) * prob_loss
@@ -204,6 +206,7 @@ def main(_):
 
     model_fn = model_fn_builder(
         bert_config=bert_config,
+        loss_lambda=0.1,
         init_checkpoint=FLAGS.init_checkpoint,
         learning_rate=FLAGS.learning_rate,
         num_train_steps=10000,
@@ -224,7 +227,7 @@ def main(_):
         input_files=input_files,
         max_seq_length=FLAGS.max_seq_length,
         is_training=True)
-    estimator.train(input_fn=train_input_fn, max_steps=10000)
+    estimator.train(input_fn=train_input_fn, max_steps=100000)
 
 
 def init_parameters():
