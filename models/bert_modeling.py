@@ -234,7 +234,9 @@ class SoftMarkedBertModel(object):
                     initializer_range=config.initializer_range,
                     do_return_all_layers=True)
 
-            self.sequence_output = self.all_encoder_layers[-1]
+            # h′i=hci+ei residual connection
+            self.sequence_output = self.all_encoder_layers[-1] + self.seq_embedding_output
+
             # The "pooler" converts the encoded sequence tensor of shape
             # [batch_size, seq_length, hidden_size] to a tensor of shape
             # [batch_size, hidden_size]. This is necessary for segment-level
